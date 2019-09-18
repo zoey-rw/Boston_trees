@@ -1,5 +1,148 @@
 server <- function(input, output, session) {
   
+  #### TAB 1: MAPS OF TEMPERATURE OR HVI, WITH PRIORITY REGIONS OVERLAID, AND CURRENT/POTENTIAL TREE MAP
+  
+  output$temp_hvi <- renderLeaflet({
+    tracts %>%  
+      leaflet() %>%
+      addTiles() %>%  
+      setView(-71.08, 42.3, zoom = 11) %>%
+      addProviderTiles("CartoDB.Positron")  %>% clearControls()
+  })
+  
+  observeEvent(input$choose_temp_hvi, {
+    if(input$choose_temp_hvi == "temp"){
+      var <- var1
+      pal <- pal1
+      highlight <- "priority_heat_trees"
+      markers <- gCentroid(tract_data[tract_data[[highlight]]==T,],byid=TRUE)
+      title <- "Mean summer <br>temperature (C)"
+    } else if(input$choose_temp_hvi == "HVI"){
+      var <- var2
+      pal <- pal2
+      highlight <- "priority_hvi_trees"
+      markers <- gCentroid(tract_data[tract_data[[highlight]]==T,],byid=TRUE)
+      title <- "Heat Vulnerability Index"
+    }
+    
+    leafletProxy("temp_hvi") %>% 
+      clearControls() %>%
+      clearShapes() %>% 
+      clearMarkers() %>% 
+      addPolygons(data = tract_data , 
+                  fillColor = ~pal(var), 
+                  fillOpacity = 0.7, 
+                  weight = 0.2, 
+                  smoothFactor = 0.2,
+                  popup = ~tract_data$neighborhood) %>%
+      addLegend(pal = pal, 
+                values = var, 
+                position = "bottomright", 
+                title = title)  %>%  
+      addMarkers(lng = markers$x, 
+                 lat = markers$y,
+                 icon = exclamation.point,
+                 label = "Priority region")
+  })
+  
+  
+  output$current_trees <- renderLeaflet({
+    tracts %>%
+      leaflet() %>% addTiles() %>%
+      setView(-71.08, 42.3, zoom = 12) %>%
+      addProviderTiles("CartoDB.Positron") %>%
+      addPolygons(data = tract_data ,
+                  fillColor = ~pal3(var3),
+                  fillOpacity = 0.7,
+                  weight = 0.2,
+                  smoothFactor = 0.2,
+                  popup = ~tract_data$popups,
+                  group = "Current tree cover (%)") %>%
+      addPolygons(data = tract_data ,
+                  fillColor = ~pal4(var4),
+                  fillOpacity = 0.7,
+                  weight = 0.2,
+                  smoothFactor = 0.2,
+                  popup = ~tract_data$popups,
+                  group = "Potential tree cover (%)") %>%
+      addLayersControl(
+        baseGroups = c("Current tree cover (%)", "Potential tree cover (%)"),
+        options = layersControlOptions(collapsed = FALSE)) %>%
+      hideGroup("Potential tree cover (%)")
+  })
+  
+  observeEvent(input$current_trees_groups, {
+    current <- leafletProxy("current_trees") %>% clearControls()
+    if (input$current_trees_groups == 'Current tree cover (%)'){
+      current <- current %>% addLegend(pal = pal3,
+                                       values = var3,
+                                       opacity = .7,
+                                       position = "bottomright",
+                                       title = "Current <br>tree cover (%)")
+    } else if (input$current_trees_groups == 'Potential tree cover (%)'){
+      current <- current %>% addLegend(pal = pal4,
+                                       values = var4,
+                                       opacity = .7,
+                                       labels = labelFormat(6),
+                                       position = "bottomright",
+                                       title = "Potential <br>tree cover (%)")
+    }
+  })
+  
+  ### TAB 2: OTHER CONSIDERATIONS
+  
+  output$other_considerations <- renderLeaflet({
+    tracts %>%  
+      leaflet() %>% addTiles() %>%  
+      setView(-71.08, 42.3, zoom = 12) %>%
+      addProviderTiles("CartoDB.Positron")
+  })
+  
+  output$other_considerations_overlay <- renderPlot({
+    leafletProxy("other_considerations") %>%
+      clearControls() %>%
+      clearShapes() %>% 
+      addPolygons(data = tract_data , 
+                  fillColor = ~pal1(var1), 
+                  fillOpacity = 0.7, 
+                  weight = 0.2, 
+                  smoothFactor = 0.2, 
+                  popup = ~tract_data$popups) %>%
+      addPolygons(data = parcel[parcel$PTYPE %in% c(902),],
+                  color = "#444444", weight = 1, smoothFactor = 0.5,
+                  opacity = 1.0, fillOpacity = 1,
+                  fillColor = "green",
+                  group = "City-owned property") %>% 
+      addPolygons(data = parcel[parcel$PTYPE %in% c(901, 910:929),],
+                  color = "#444444", weight = 1, smoothFactor = 0.5,
+                  opacity = 1.0, fillOpacity = 1,
+                  fillColor = "green",
+                  group = "State-owned property") %>% 
+      addPolygons(data = parcel[parcel$PTYPE %in% c(900),],
+                  color = "#444444", weight = 1, smoothFactor = 0.5,
+                  opacity = 1.0, fillOpacity = 1,
+                  fillColor = "green",
+                  group = "Federal-owned property") %>% 
+      addPolygons(data = parcel[parcel$PTYPE %in% c(903, 908,973, 986, 965, 978, 984),],
+                  color = "#444444", weight = 1, smoothFactor = 0.5,
+                  opacity = 1.0, fillOpacity = 1,
+                  fillColor = "green",
+                  group = "Boston Housing Authority, 
+                  <br>Boston Redevelopment Authority, <br>or other government-associated or public land") %>% 
+      addLayersControl(overlayGroups = 
+                         c("City-owned property", "State-owned property", 
+                           "Federal-owned property", "Boston Housing Authority, 
+                           <br>Boston Redevelopment Authority, <br>or other government-associated or public land"),
+                       options = layersControlOptions(collapsed = FALSE)) %>% 
+      addLegend(pal = pal1, 
+                values = var1, 
+                position = "bottomright", 
+                title = "Mean summer <br>temperature (C)") 
+  })
+  
+  
+  #### TAB 3: TREE-SELECTION ####
+  
   # create one reactivevalue that stores the output from each question
   approved_trees <- reactiveValues(size_trees=0, 
                                    allergen_trees=0, 
@@ -129,140 +272,4 @@ server <- function(input, output, session) {
     })
     DTOutput("recommendations")
   }) # close tree recommendations renderUI
-
-  output$temp_hvi <- renderLeaflet({
-    tracts %>%  
-    leaflet() %>%
-    addTiles() %>%  
-    setView(-71.08, 42.3, zoom = 11) %>%
-    addProviderTiles("CartoDB.Positron")  %>% clearControls()
-  })
-  
-  observeEvent(input$choose_temp_hvi, {
-    if(input$choose_temp_hvi == "temp"){
-      var <- var1
-      pal <- pal1
-      highlight <- "priority_heat_trees"
-      markers <- gCentroid(tract_data[tract_data[[highlight]]==T,],byid=TRUE)
-      title <- "Mean summer <br>temperature (C)"
-    } else if(input$choose_temp_hvi == "HVI"){
-      var <- var2
-      pal <- pal2
-      highlight <- "priority_hvi_trees"
-      markers <- gCentroid(tract_data[tract_data[[highlight]]==T,],byid=TRUE)
-      title <- "Heat Vulnerability Index"
-    }
-
-    leafletProxy("temp_hvi") %>% 
-      clearControls() %>%
-      clearShapes() %>% 
-      clearMarkers() %>% 
-      addPolygons(data = tract_data , 
-                  fillColor = ~pal(var), 
-                  fillOpacity = 0.7, 
-                  weight = 0.2, 
-                  smoothFactor = 0.2,
-                  popup = ~tract_data$neighborhood) %>%
-      addLegend(pal = pal, 
-                values = var, 
-                position = "bottomright", 
-                title = title)  %>%  
-      addMarkers(lng = markers$x, 
-                        lat = markers$y,
-                        icon = exclamation.point,
-                 label = "Priority region")
-  })
-  
-  
-  output$current_trees <- renderLeaflet({
-    tracts %>%
-      leaflet() %>% addTiles() %>%
-      setView(-71.08, 42.3, zoom = 12) %>%
-      addProviderTiles("CartoDB.Positron") %>%
-      addPolygons(data = tract_data ,
-                  fillColor = ~pal3(var3),
-                  fillOpacity = 0.7,
-                  weight = 0.2,
-                  smoothFactor = 0.2,
-                  popup = ~tract_data$popups,
-                  group = "Current tree cover (%)") %>%
-      addPolygons(data = tract_data ,
-                  fillColor = ~pal4(var4),
-                  fillOpacity = 0.7,
-                  weight = 0.2,
-                  smoothFactor = 0.2,
-                  popup = ~tract_data$popups,
-                  group = "Potential tree cover (%)") %>%
-      addLayersControl(
-        baseGroups = c("Current tree cover (%)", "Potential tree cover (%)"),
-        options = layersControlOptions(collapsed = FALSE)) %>%
-      hideGroup("Potential tree cover (%)")
-  })
-
-  observeEvent(input$current_trees_groups, {
-    current <- leafletProxy("current_trees") %>% clearControls()
-    if (input$current_trees_groups == 'Current tree cover (%)'){
-      current <- current %>% addLegend(pal = pal3,
-                                       values = var3,
-                                       opacity = .7,
-                                       position = "bottomright",
-                                       title = "Current <br>tree cover (%)")
-    } else if (input$current_trees_groups == 'Potential tree cover (%)'){
-      current <- current %>% addLegend(pal = pal4,
-                                       values = var4,
-                                       opacity = .7,
-                                       labels = labelFormat(6),
-                                       position = "bottomright",
-                                       title = "Potential <br>tree cover (%)")
-    }
-  })
-  
-  output$other_considerations <- renderLeaflet({
-    tracts %>%  
-      leaflet() %>% addTiles() %>%  
-      setView(-71.08, 42.3, zoom = 12) %>%
-      addProviderTiles("CartoDB.Positron")
-  })
-  
-  output$other_considerations_overlay <- renderPlot({
-    leafletProxy("other_considerations") %>%
-      clearControls() %>%
-      clearShapes() %>% 
-      addPolygons(data = tract_data , 
-                  fillColor = ~pal1(var1), 
-                  fillOpacity = 0.7, 
-                  weight = 0.2, 
-                  smoothFactor = 0.2, 
-                  popup = ~tract_data$popups) %>%
-      addPolygons(data = parcel[parcel$PTYPE %in% c(902),],
-                  color = "#444444", weight = 1, smoothFactor = 0.5,
-                  opacity = 1.0, fillOpacity = 1,
-                  fillColor = "green",
-                  group = "City-owned property") %>% 
-      addPolygons(data = parcel[parcel$PTYPE %in% c(901, 910:929),],
-                  color = "#444444", weight = 1, smoothFactor = 0.5,
-                  opacity = 1.0, fillOpacity = 1,
-                  fillColor = "green",
-                  group = "State-owned property") %>% 
-      addPolygons(data = parcel[parcel$PTYPE %in% c(900),],
-                  color = "#444444", weight = 1, smoothFactor = 0.5,
-                  opacity = 1.0, fillOpacity = 1,
-                  fillColor = "green",
-                  group = "Federal-owned property") %>% 
-      addPolygons(data = parcel[parcel$PTYPE %in% c(903, 908,973, 986, 965, 978, 984),],
-                  color = "#444444", weight = 1, smoothFactor = 0.5,
-                  opacity = 1.0, fillOpacity = 1,
-                  fillColor = "green",
-                  group = "Boston Housing Authority, 
-                          <br>Boston Redevelopment Authority, <br>or other government-associated or public land") %>% 
-      addLayersControl(overlayGroups = 
-                         c("City-owned property", "State-owned property", 
-                          "Federal-owned property", "Boston Housing Authority, 
-                          <br>Boston Redevelopment Authority, <br>or other government-associated or public land"),
-        options = layersControlOptions(collapsed = FALSE)) %>% 
-      addLegend(pal = pal1, 
-                values = var1, 
-                position = "bottomright", 
-                title = "Mean summer <br>temperature (C)") 
-  })
 }

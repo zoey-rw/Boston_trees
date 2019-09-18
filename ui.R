@@ -14,38 +14,43 @@ library(shinyWidgets)
 library(shinythemes)
 library(shinydashboard)
 
+# call source file, which loads in data and sets some variable names.
+# text for modals (pop-ups) is all in the source file as well.
 source("source.R")
 
 # title
-header <-  dashboardHeader(title = "Right Place, Right Tree | Boston, MA",
-                           titleWidth = 530)
+header <-  dashboardHeader(title = "Right Place, Right Tree | Boston, MA", titleWidth = 530)
+
 # sidebar
 sidebar <- dashboardSidebar(
   sidebarMenu(
     menuItem("Did you know that Boston's street trees can change the local climate? This tool can help you decide where to plant trees, what species will thrive at your site, and how to take care of new trees."),
-    menuItem("Step 1: Choose region", tabName = "priority", icon = icon("map-marked-alt")),
+    menuItem("Step 1: Choose region", icon = icon("map-marked-alt", tabName = "priority")),
     menuItem("Step 2: Learn about regional considerations", icon = icon("question-circle"), tabName = "other_considerations"),
     menuItem("Step 3: Choose the right tree", icon = icon("tree"), tabName = "choose_tree"),
     menuItem("Step 4: Keep your tree healthy!", icon = icon("check-circle"), tabName = "keep_healthy"),  
     menuItem(bs_button("Data sources and methods")) %>%
                bs_attach_modal("about_data"),
     helpText("This application was created by the Boston University Terrestrial Biogeoscience Practicum, Spring 2019.")
-  ) 
-) 
-# body 
+  )) 
+
+# body (split into tabs)
 body <- dashboardBody(
+  
   bs_modal(id = "about_data", 
            title = "Data sources and methods", 
            body = HTML(modal_data_text)),
+  
   tags$head(
-    HTML('<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">'),
-    HTML('<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Josefin+Sans" crossorigin="anonymous">')),
+    # include stylesheets for the "fontAwesome" icons, as well as the Josefin Sans font.
+    HTML('<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+         <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Josefin+Sans" crossorigin="anonymous">')),
+  
   tabItems(
     tabItem(tabName = "priority",
             fluidRow(
               box(width = 12,
-                  h2("Step 1. Choose a region for planting trees."),
-                  "Skip this step if you already know where you're planting!")),
+                  h2("Step 1. Choose a region for planting trees."), "Skip this step if you already know where you're planting!")),
             fluidRow(
               box(width=12, 
                   column(6, "Street trees can cool the city down in the summer, reducing the 'urban heat islands.' Heat can be especially dangerous for certain groups, like those who can't leave their homes or don't have air conditioning.",
@@ -53,8 +58,8 @@ body <- dashboardBody(
                   column(6,
                          radioButtons("choose_temp_hvi", "View map of Boston by:", 
                                        c("Summer temperatures - how hot does this region get, on average?" = "temp",
-                                                  "Heat Vulnerability Index - how dangerous are heat waves for this community?" = "HVI"))),
-                    leafletOutput("temp_hvi", height = 500)) # map w/ temp or HVI highlighted
+                                          "Heat Vulnerability Index - how dangerous are heat waves for this community?" = "HVI"))),
+                    leafletOutput("temp_hvi", height = 500)) # output of map with temperature or HVI highlighted
               ),
             fluidRow(
               bs_modal(id = "about_alternatives", 
@@ -70,6 +75,7 @@ body <- dashboardBody(
                                        )))            
                        ), # close tabItem "priority"
     
+    
     tabItem(tabName = "other_considerations",
             fluidRow(
               box(width = 12,
@@ -78,10 +84,11 @@ body <- dashboardBody(
                   br(), br(),
                   "You can request that the city plant trees on your own land, or on public land. Use the map layers below to find potential tree sites." ,
               leafletOutput("other_considerations", height = 500),
-              plotOutput("other_considerations_overlay", height = 1)
+              plotOutput("other_considerations_overlay", height = 1) # hacky way of getting the map to update
               )
             ) # close map row
     ), # close tabItem "other_considerations"
+    
     
     tabItem(tabName = "choose_tree",
             fluidRow(
@@ -151,6 +158,7 @@ body <- dashboardBody(
             ) # close tree species row 
     ), # close choose_tree tab
    
+    
     tabItem(tabName = "keep_healthy",
             fluidRow(
               box(width = 12,
@@ -158,10 +166,7 @@ body <- dashboardBody(
                   "Here are resources for ensuring that your tree thrives in its new home." )),
             fluidRow(
               box(width = 12,
-                  column(2, tags$a(img(src = "https://pbs.twimg.com/profile_images/631076340280635396/nH93RnFb_400x400.png",
-                                    width = "80px"
-                                    #, style="margin-top: 50%; margin-bottom: 50%;"
-                                    ),
+                  column(2, tags$a(img(src = "https://pbs.twimg.com/profile_images/631076340280635396/nH93RnFb_400x400.png", width = "80px"),
                                 href="https://www.cityofboston.gov/311/",  target="_blank"), style="height: 100%;"),
                   column(width = 4,
                          h3("Request tree maintenance from the City of Boston.")),
@@ -174,14 +179,12 @@ body <- dashboardBody(
             fluidRow(
               box(width = 12,
                   column(2, tags$a(img(src = "https://upload.wikimedia.org/wikipedia/commons/3/37/USDA_logo.png",
-                                    width = "80px"
-                                    #, style="margin-top: 50%; margin-bottom: 50%;"
-                                    ),
+                                    width = "80px"),
                                 href="https://www.aphis.usda.gov/aphis/resources/pests-diseases/hungry-pests/pest-tracker/states/massachusetts",  
                                 target="_blank")),
                   column(4, h3("Stay aware of pests in your area.")),
                   column(6, tags$a("Check out USDA resources on the current ranges of common MA pests.", 
-                                   href="https://www.aphis.usda.gov/aphis/resources/pests-diseases/hungry-pests/pest-tracker/states/massachusetts",  
+                                   href="https://www.aphis.usda.gov/aphis/resources/pests-diseases/hungry-pests/pest-tracker/states/massachusetts",
                                    target="_blank"),
                          br(), br(),
                          tags$a("Explore the National Insect & Disease Risk Map", 
@@ -191,9 +194,7 @@ body <- dashboardBody(
             fluidRow(
               box(width = 12,
                   column(2, tags$a(img(src = "https://ww1.prweb.com/prfiles/2017/10/08/14781858/COB_B_Blue_wName-01.png",
-                                    height = "90px"
-                                    #, style="margin-top: 50%; margin-bottom: 50%;"
-                                    ),
+                                    height = "90px"),
                                 href="https://www.boston.gov/departments/parks-and-recreation/caring-bostons-urban-forest#tree-care-tips",  
                                 target="_blank")),
                   column(4, h3("Read the City of Boston's tips on caring for street trees.")),
