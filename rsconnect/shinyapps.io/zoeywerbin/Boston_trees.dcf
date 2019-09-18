@@ -1,0 +1,13 @@
+name: Boston_trees
+title: Boston_trees
+username:
+account: zoeywerbin
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 798257
+bundleId: 2424438
+url: https://zoeywerbin.shinyapps.io/Boston_trees/
+when: 1568820865.4147
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: .httr-oauth|old/app_5-5-19.R|old/app_6-5-19.R|old/app_8-2019.R

@@ -1,0 +1,6 @@
+# gitignore
+# ignore raw data files
+data/raw/
+
+# ignore rproject files
+.Rproj.user/

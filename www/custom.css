@@ -1,0 +1,43 @@
+ /* .h3 {
+ margin-top: 20px;
+  margin-bottom: 9px;
+  margin-block-start: 0;
+ margin-top: 50%; 
+margin-bottom: 50%;
+}*/
+
+
+.sidebar-menu > li {
+    white-space: normal;
+}
+.help-block {
+  white-space: normal !important;
+  padding: 10px;
+}
+
+/* logo */
+  .skin-green .main-header .logo {
+  background-color: #008000;
+  font-family: Josefin Sans; 
+  
+/* font-weight: bold; */
+  font-size: 30px;
+  }
+                    
+/* logo when hovered */
+  .skin-green .main-header .logo:hover {
+  background-color: #008000;
+  }
+                    
+/* navbar (rest of the header) */
+  .skin-green .main-header .navbar {
+   background-color: #008000;
+   }    
+                    
+* { font-family: Josefin Sans; font-size: 16px;}
+
+td {padding:4px 4px !important;}
+div.info.legend.leaflet-control br {clear: both;}
+
+h2 {margin-top: 0} 
+h3 {margin-top: 10px} 
