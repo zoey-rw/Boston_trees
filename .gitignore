@@ -4,3 +4,10 @@ data/raw/
 
 # ignore rproject files
 .Rproj.user/
+Boston_trees.Rproj
+
+# ignore shinyapps.io files
+.httr-oauth
+
+# old files
+data_prep.R
