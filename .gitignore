@@ -8,6 +8,7 @@ Boston_trees.Rproj
 
 # ignore shinyapps.io files
 .httr-oauth
+rsconnect/
 
 # old files
 data_prep.R
