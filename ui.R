@@ -22,16 +22,17 @@ source("source.R")
 header <-  dashboardHeader(title = "Right Place, Right Tree | Boston, MA", titleWidth = 530)
 
 # sidebar
-sidebar <- dashboardSidebar(
-  sidebarMenu(
+sidebar <- dashboardSidebar(#id = "inTabset",
+                            
+  sidebarMenu(id = "inTabset",
     menuItem("Did you know that Boston's street trees can change the local climate? This tool can help you decide where to plant trees, what species will thrive at your site, and how to take care of new trees."),
-    menuItem("Step 1: Choose region", icon = icon("map-marked-alt", tabName = "priority")),
+    menuItem("Step 1: Choose region", icon = icon("map-marked-alt"), tabName = "priority"),
     menuItem("Step 2: Learn about regional considerations", icon = icon("question-circle"), tabName = "other_considerations"),
     menuItem("Step 3: Choose the right tree", icon = icon("tree"), tabName = "choose_tree"),
     menuItem("Step 4: Keep your tree healthy!", icon = icon("check-circle"), tabName = "keep_healthy"),  
     menuItem(bs_button("Data sources and methods")) %>%
                bs_attach_modal("about_data"),
-    helpText("This application was created by the Boston University Terrestrial Biogeoscience Practicum, Spring 2019.")
+    helpText("This application was created by the Boston University Biogeoscience and URBAN graduate programs.")
   )) 
 
 # body (split into tabs)
@@ -65,15 +66,19 @@ body <- dashboardBody(
               bs_modal(id = "about_alternatives", 
                        title = "Alternatives to tree-planting", 
                        body = HTML(modal_alternatives_text)),
-              box(width=12, 
+              box(width=10, 
             bsCollapse(id = "collapseExample", 
                        bsCollapsePanel("Not sure if there is enough space for trees?", 
                                            "Explore the map below to see the current and potential tree canopy cover for each Boston census tract. In regions with low potential for tree canopy expansion, it may make sense to explore other greening options.",
                                        bs_button("Learn about alternatives to tree-planting") %>%
                                          bs_attach_modal("about_alternatives"),
                                            leafletOutput("current_trees", height = 500))
-                                       )))            
-                       ), # close tabItem "priority"
+                                       )),
+            actionButton('goToTab2', 'Step 2', icon("chevron-circle-right"), 
+                         style="color: #fff; background-color: #009933;")
+            
+            )
+            ), # close tabItem "priority"
     
     
     tabItem(tabName = "other_considerations",
@@ -84,9 +89,13 @@ body <- dashboardBody(
                   br(), br(),
                   "You can request that the city plant trees on your own land, or on public land. Use the map layers below to find potential tree sites." ,
               leafletOutput("other_considerations", height = 500),
-              plotOutput("other_considerations_overlay", height = 1) # hacky way of getting the map to update
+              plotOutput("other_considerations_overlay", height = 10) # hacky way of getting the map to update
               )
-            ) # close map row
+            ), # close map row
+            column(10),
+            column(2,
+            actionButton('goToTab3', 'Step 3', icon("chevron-circle-right"), 
+                         style="color: #fff; background-color: #009933;"))
     ), # close tabItem "other_considerations"
     
     
@@ -155,7 +164,11 @@ body <- dashboardBody(
                          a("Read about Boston's urban forest here.", 
                            href="https://www.boston.gov/departments/parks-and-recreation/caring-bostons-urban-forest"))
               )
-            ) # close tree species row 
+            ), # close tree species row 
+            fluidRow(
+            column(2, offset = 10,
+                   actionButton('goToTab4', 'Step 4', icon("chevron-circle-right"), 
+                                style="color: #fff; background-color: #009933;")))
     ), # close choose_tree tab
    
     

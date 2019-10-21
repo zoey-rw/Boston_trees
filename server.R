@@ -2,6 +2,19 @@ server <- function(input, output, session) {
   
   #### TAB 1: MAPS OF TEMPERATURE OR HVI, WITH PRIORITY REGIONS OVERLAID, AND CURRENT/POTENTIAL TREE MAP
   
+  observeEvent(input$goToTab2, {
+    updateTabsetPanel(session, "inTabset",
+                      selected = "other_considerations")
+  })
+  observeEvent(input$goToTab3, {
+    updateTabsetPanel(session, "inTabset",
+                      selected = "choose_tree")
+  })
+  observeEvent(input$goToTab4, {
+    updateTabsetPanel(session, "inTabset",
+                      selected = "keep_healthy")
+  })
+  
   output$temp_hvi <- renderLeaflet({
     tracts %>%  
       leaflet() %>%

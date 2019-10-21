@@ -1,6 +1,7 @@
 #### Prepare map data for Boston trees app #####
 library(googlesheets)
 library(tigris)   # census data for map
+library(sf)
   
 #### read/subset/save parcel data ####
 # shapefiles downloaded from https://data.boston.gov/dataset/parcels-2016-data-full
@@ -20,7 +21,7 @@ dup_n <- community_orgs$neighborhood[duplicated(community_orgs$neighborhood)]
 dup <- community_orgs[community_orgs$neighborhood %in% dup_n,]
 dup <- aggregate(community_org_link ~ neighborhood,  data = dup, paste, collapse="<br><br>")
 orgs <- rbind(community_orgs[!community_orgs$neighborhood %in% dup_n,], dup)
-
+ 
 # to download census tract - neighborhood mapping data
 #http://bostonopendata-boston.opendata.arcgis.com/datasets/34f2c48b670d4b43a617b1540f20efe3_0.csv
 neighborhood <- read_csv("data/raw/Climate_Ready_Boston_Social_Vulnerability.csv")
