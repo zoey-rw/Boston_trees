@@ -10,7 +10,7 @@ if(redownloadData==TRUE){
 }
 
 # read in prepped data files
-tract_data <- readRDS("data/tract_data.rds")
+tract_data <- readRDS("data/tract_data.rds") %>% methods::as(Class = "Spatial")
 tracts <- readRDS("data/tracts.rds")
 app_df <- readRDS("data/treeData.rds")
 parcel <- readRDS("data/parcel.rds")
