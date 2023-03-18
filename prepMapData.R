@@ -2,17 +2,21 @@
 #library(googlesheets)
 library(tigris)   # census data for map
 library(sf)
+library(readr)
   
 #### read/subset/save parcel data ####
 # shapefiles downloaded from https://data.boston.gov/dataset/parcels-2016-data-full
 shape <- read_sf(dsn = "data/raw/Parcels_2016_Data_Full/Parcels_2016_Data_Full.shp", layer = "Parcels_2016_Data_Full")
+
+# This approach does not work
+# shape <- read_sf("https://raw.githubusercontent.com/zoey-rw/Boston_trees/master/data/raw/Parcels_2016_Data_Full/Parcels_2016_Data_Full.shp", layer = "Parcels_2016_Data_Full")
 parcel <- shape[,c("OBJECTID","LAND_SF", "PTYPE")]
 parcel <- parcel[parcel$PTYPE %in% c(900:903, 910:929, 908,973, 986, 965, 978, 984),]
 saveRDS(parcel, "data/parcel.rds")
 
 #### community organization data - compiled by hand ####
-community_orgs <- read_csv("data/raw/Ecological Considerations - CommunityOrgs.csv")
-
+#community_orgs <- read_csv("data/raw/Ecological Considerations - CommunityOrgs.csv")
+community_orgs <- read_csv("https://raw.githubusercontent.com/zoey-rw/Boston_trees/master/data/raw/Ecological%20Considerations%20-%20CommunityOrgs.csv")
 colnames(community_orgs) <- c("neighborhood","org","link")
 community_orgs$community_org_link <- paste0("<a href='",community_orgs$link,"'>",
                                               community_orgs$org, "</a>")
@@ -24,7 +28,8 @@ orgs <- rbind(community_orgs[!community_orgs$neighborhood %in% dup_n,], dup)
  
 # to download census tract - neighborhood mapping data
 #http://bostonopendata-boston.opendata.arcgis.com/datasets/34f2c48b670d4b43a617b1540f20efe3_0.csv
-neighborhood <- read_csv("data/raw/Climate_Ready_Boston_Social_Vulnerability.csv")
+#neighborhood <- read_csv("data/raw/Climate_Ready_Boston_Social_Vulnerability.csv")
+neighborhood <- read_csv("https://raw.githubusercontent.com/zoey-rw/Boston_trees/master/data/raw/Climate_Ready_Boston_Social_Vulnerability.csv")
 neighborhood_tracts <- neighborhood[,c("Name","GEOID10")]
 colnames(neighborhood_tracts) <- c("neighborhood","geoid_2010")
 community <- merge(neighborhood_tracts, orgs, all.x=T)
@@ -35,11 +40,14 @@ community$community_org_link <- paste("<img src = https://static.thenounproject.
                                       "<br><a href='https://www.sfttbos.org/'> Speak for the Trees: tree giveaways, workshops, tree inventory project, and neighborhood-focused tree planting</a>")
 
 #### read in vegetation data ####
-asthma <- read_csv("data/raw/Chronic Asthma Prevalence.csv")    # asthma prevalence
-hvi <- read_csv("data/raw/Boston_HVI_original_Mean_LST_joined.csv", name_repair = "minimal") # HVI - methods and components in paper supplement 
+asthma <- read_csv("https://raw.githubusercontent.com/zoey-rw/Boston_trees/master/data/raw/Chronic%20Asthma%20Prevalence.csv")    # asthma prevalence
+hvi <- read_csv("https://raw.githubusercontent.com/zoey-rw/Boston_trees/master/data/raw/Boston_HVI_original_Mean_LST_joined.csv", name_repair = "minimal") # HVI - methods and components in paper supplement 
+current.potential_total <- read_csv("https://raw.githubusercontent.com/zoey-rw/Boston_trees/master/data/raw/CensusTracts_TC_Existing_PotentialVeg.csv") # total vegetation per track
+
+# Reading directly from URL does not work for XLS files
 current_percent <- readxl::read_xls("data/raw/Boston_CTs_Percent_Current_Veg.xls", sheet = "Sheet1") # current vegetation per tract, as percentage
 potential_percent <- readxl::read_xls("data/raw/Boston_CTs_Percent_Potential_Veg.xls", sheet = "Sheet1") # potential vegetation per tract, as percentage
-current.potential_total <- read_csv("data/raw/CensusTracts_TC_Existing_PotentialVeg.csv") # total vegetation per track
+
 
 
 # download census tract data/shapes (using Tigris)
