@@ -1,12 +1,13 @@
 ####### Prep data for Boston Trees Shiny app #######
-library(googlesheets)
+#library(googlesheets)
   
 #### prepare tree-characteristic data ####
-# gs <- gs_title("Ecological Considerations")
-# app_df <- gs %>% gs_read("Application.input.2")
-# app_df <- data.frame(app_df)
 
-app_df <- read.csv("data/raw/Ecological Considerations - Application.input.2.csv")
+# Read data from data/ directory  
+#app_df <- read.csv("data/raw/Ecological Considerations - Application.input.2.csv")
+
+# Read data stored on Github
+app_df <- read.csv("https://raw.githubusercontent.com/zoey-rw/Boston_trees/master/data/raw/Ecological%20Considerations%20-%20Application.input.2.csv")
 
   
   # format canopy spread column
